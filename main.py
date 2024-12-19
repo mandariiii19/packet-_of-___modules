@@ -7,16 +7,16 @@ def start_type_header(table):
     values = table[1]
     for i in range(len(values)):
         if values[i].count('.') >= 2:
-            table[0][i] = header[i] + '_datatime'  # Добавляет суффикс '_datatime' для значений с двумя и более точками.
+            table[0][i] = header[i] + '_datatime'  
         elif values[i].count('.') == 1 and all([alpha.isdigit() for alpha in values[i].split('.')]):
-            table[0][i] = header[i] + '_float'  # Добавляет '_float', если значение имеет одну точку и состоит из цифр.
+            table[0][i] = header[i] + '_float'
         else:
             if values[i].isdigit():
-                table[0][i] = header[i] + '_int'  # Добавляет '_int', если значение является целым числом.
+                table[0][i] = header[i] + '_int'  
             elif 'True' == values[i] or "False" == values[i]:
-                table[0][i] = header[i] + '_bool'  # Добавляет '_bool' для логических значений.
+                table[0][i] = header[i] + '_bool'  
             else:
-                table[0][i] = header[i] + '_str'  # Добавляет '_str' для строковых значений.
+                table[0][i] = header[i] + '_str'
     return table
 
 # Разделяет таблицу на две части по указанной строке.
@@ -179,13 +179,13 @@ def get_rows_by_number(name_table, number_start_row, number_end_row, copy_table,
             
 # Функция для вывода таблицы
 def print_table(name_table):
-    print('-_-_-_-_-_-_-_-_-_-_-_-_-') # Разграничители для улучшения читаемости вывода
+    print('-_-_-_-_-_-_-_-_-_-_-_-_-')
     with open(f'{name_table}.csv', 'r', encoding='utf-8') as f:
         reader = csv.reader(f)
         a = list(reader)
         for line in a:
             print(*line)
-    print('-_-_-_-_-_-_-_-_-_-_-_-_-') # Разграничители для улучшения читаемости вывода
+    print('-_-_-_-_-_-_-_-_-_-_-_-_-') 
 
 # Функция для загрузки таблицы из репозитория, в котором находится программа.
 def load_table(name_table):
