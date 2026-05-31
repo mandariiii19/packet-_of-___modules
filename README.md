@@ -1,52 +1,125 @@
-Тема задания: «Реализация собственного пакета модулей по манипулированию табличными данными».
+# TableKit — Python Table Manipulation Package
 
-__Выполняла: Манаева Дарья ТРПО24-3__
+A lightweight, pure-Python library for loading, transforming, and saving tabular data — built on top of `csv`, `pickle`, and native file I/O. No external dependencies.
 
-<hr>
+```python
+table = load_table("data.csv")
+set_column_types({0: int, 1: float, 2: str})
+filtered = filter_rows(gr(get_values(1), 3.5))
+save_table(filtered, "output.csv")
+```
 
-_**Базовое задание**_: На базе модулей __csv__, __pickle__ и прямой работы с файлами реализовать следующий базовый функционал:
+---
 
-1. Функции load_table, save_table по загрузке/сохранению табличных данных во внутреннее представление модуля/из внутреннего представления модуля Модуля с базовыми операциями над таблицами. Для каждой функции должно быть реализована генерация не менее одного вида исключительных ситуаций.
+## Features
 
-2. Модуль с базовыми операциями над таблицами:
+### I/O
+| Function | Description |
+|----------|-------------|
+| `load_table(file1, ...)` | Load from one or multiple CSV / pickle files; validates column structure across files |
+| `save_table(table, file, max_rows=None)` | Save to one file or split across multiple files by row limit |
 
-	* `get_rows_by_number(start, [stop], copy_table=False)` — получение таблицы из одной строки или из строк из интервала по номеру строки. Функция либо копирует исходные данные, либо создает новое представление таблицы, работающее с исходным набором данных (`copy_table=False`), таким образом изменения, внесенные через это представление, будут наблюдаться и в исходной таблице.
-	* `get_rows_by_index(val1, … , copy_table=False)` — получение новой таблицы из одной строки или из строк со значениями в первом столбце, совпадающими с переданными аргументами `val1`, ..., `valN`. Функция либо копирует исходные данные, либо создает новое представление таблицы, работающее с исходным набором данных (`copy_table=False`), таким образом, изменения, внесенные через это представление, будут наблюдаться и в исходной таблице.
-	* `get_column_types(by_number=True)` — получение словаря вида «столбец: тип значений». Тип значения: `int`, `float`, `bool`, `str` (по умолчанию для всех столбцов). Параметр `by_number` определяет вид значения столбца – целочисленный индекс столбца или его строковое представление.
-	* `set_column_types(types_dict, by_number=True)` — задание словаря вида столбец: тип_значений. Тип значения: `int`, `float`, `bool`, `str` (по умолчанию для всех столбцов). Параметр `by_number` определяет вид значения столбца — целочисленный индекс столбца или его строковое представление.
-	* `get_values(column=0)` — получение списка значений (типизированных согласно типу столбца) таблицы из столбца либо по номеру столбца (целое число, значение по умолчанию `0`), либо по имени столбца.
-	* `get_value(column=0)` — аналог функции `get_values(column=0)` для представления таблицы с одной строкой, возвращает не список, а одно значение (типизированное согласно типу столбца).
-	* `set_values(values, column=0)` — задание списка значений `values` для столбца таблицы (типизированных согласно типу столбца) либо по номеру столбца (целое число, значение по умолчанию 0), либо по имени столбца.
-	* `set_value(value, column=0)` — аналог функции `set_values(values, column=0)` для представления таблицы с одной строкой, устанавливает не список значений, а одно значение (типизированное согласно типу столбца).
-	* `print_table()` — вывод таблицы на печать.
+### Row & Column Access
+| Function | Description |
+|----------|-------------|
+| `get_rows_by_number(start, stop, copy_table)` | Slice rows by index; returns a view or a deep copy |
+| `get_rows_by_index(val1, ..., copy_table)` | Filter rows by first-column value; view or copy |
+| `get_values(column)` | Get a typed list of values from a column (by index or name) |
+| `get_value(column)` | Single-row variant — returns one typed value |
+| `set_values(values, column)` | Write a list of values to a column |
+| `set_value(value, column)` | Single-row variant — write one value |
+| `print_table()` | Pretty-print the table to stdout |
 
-<hr>
+### Type System
+| Function | Description |
+|----------|-------------|
+| `get_column_types(by_number)` | Returns `{column: type}` dict; supports `int`, `float`, `bool`, `str`, `datetime` |
+| `set_column_types(types_dict, by_number)` | Set types manually |
+| `detect_types()` | Auto-detect column types from stored values; also available as `load_table(..., detect_types=True)` |
 
-_**Дополнительные задания**_:
+### Arithmetic (numeric columns)
+```python
+add(table, col_a, col_b)   # col_a + col_b
+sub(table, col_a, col_b)   # col_a - col_b
+mul(table, col_a, col_b)   # col_a * col_b
+div(table, col_a, col_b)   # col_a / col_b  (raises on division by zero)
+```
 
-1. В `load_table` реализовать `load_table(file1, ...)` — поддержку загрузки таблицы, разбитой на несколько файлов (произвольное количество файлов) (для форматов `csv` и `pickle`). В случае несоответствия структуры столбцов файлов вызывать исключительную ситуацию.
-	__(Сложность 1)__
-2. *Расширение задания 1*. В `save_table` реализовать поддержку сохранения таблицы в разбитой на несколько файлов (произвольное количество файлов) по параметру `max_rows`, определяющему максимальное количество строк в файле. Файлы `csv` и `pickle`, полученные с помощью `save_table` должны быть совместимы с `load_table` из задания 1.
-	__(Сложность 1)__
-3. Реализовать функции `concat(table1, table2)` и `split(row_number)`, склеивающую две таблицы или разбивающую одну таблицу на две по номеру строки соответственно.
-	__(Сложность 1)__
-4. Реализовать автоматическое определение типа столбцов по хранящимся в таблице значениям. Оформить как отдельную функцию и встроить этот функционал как опцию работы функции `load_table`.
-	__(Сложность 1 или 2)__
-5. Реализовать поддержку дополнительного типа значений «дата и время» на основе модуля `datetime`.
-	__(Сложность 1 или 2)__
-6. Добавить набор функций `add`, `sub`, `mul`, `div`, которые обеспечат выполнение арифметических операций для столбцов типа `int`, `float`, `bool`. Продумать сигнатуру функций и изменения в другие функции, которые позволят удобно выполнять арифметические операции со столбцами и присваивать результаты вычислений. Реализовать реагирование на некорректные значения с помощью генерации исключительных ситуаций.
-	__(Сложность 2)__
-7. По аналогии с п. 6 реализовать функции `eq` (`==`), `gr` (`>`), `ls` (`<`), `ge` (`>=`), `le` (`<=`), `ne` (`==`), которые возвращают список булевских значений длинной в количество строк сравниваемых столбцов. Реализовать функцию `filter_rows(bool_list, copy_table=False)` — получение новой таблицы из строк, для которых в `bool_list` (длинной в количество строк в таблице) находится значение `True`.
-	__(Сложность 3)__
-8. Реализовать функцию `merge_tables(table1, table2, by_number=True)`: в результате слияния создается таблица с набором столбцов, соответствующих объединенному набору столбцов исходных таблиц. Соответствие строк ищется либо по их номеру (`by_number=True`) либо по значению индекса (первый столбец). При выполнении слияния возможно множество конфликтных ситуаций. Автор должен их описать и определить допустимый способ реакции на них (в т.ч. через дополнительные параметры функции и инициацию исключительных ситуаций).
-	__(Сложность 2)__
-9. Реализовать полноценную поддержку значения `None` в незаполненных ячейках таблицы. Должно работать при загрузке ячеек с пропусками значений, при операциях, приводящих к появлению пустых ячеек, при работе с `get` и `set` операциями.
-	__(Сложность 1 или 2)__
+### Comparison & Filtering
+```python
+eq(col, value)   # ==       gr(col, value)   # >
+ls(col, value)   # <        ge(col, value)   # >=
+le(col, value)   # <=       ne(col, value)   # !=
 
-<hr>
+filter_rows(bool_list, copy_table=False)   # keep rows where True
+```
 
-#### Данный проект имеет несколько файлов:
+### Table Operations
+| Function | Description |
+|----------|-------------|
+| `concat(table1, table2)` | Stack two tables vertically |
+| `split(row_number)` | Split one table into two at a given row |
+| `merge_tables(table1, table2, by_number=True)` | Join tables by row number or index column; conflict resolution via parameters |
 
-1. main.py - программа, соответствующая требованиям задания.
-2. test.csv - тестовая таблица в формате `.csv` с заранее занесенными данными.
-3. test.dump - тестовый `pickle` файл с заранее занесенными данными аналогичными с `test.csv`
+### Extra
+- **`None` support** — empty cells load as `None`; all get/set/arithmetic operations handle `None` gracefully
+- **`datetime` column type** — full support via Python's `datetime` module
+- **Exception handling** — every function raises descriptive errors on bad input, type mismatches, or structural conflicts
+
+---
+
+## Getting Started
+
+```bash
+git clone https://github.com/YOUR_USERNAME/tablekit.git
+cd tablekit
+python main.py
+```
+
+No dependencies beyond the Python standard library.
+
+---
+
+## Quick Example
+
+```python
+from tablekit import load_table, get_rows_by_index, set_column_types, filter_rows, gr, save_table
+
+# Load and merge two CSV shards
+table = load_table("test.csv", "test2.csv")
+
+# Set types
+set_column_types({0: int, 1: str, 2: float}, by_number=True)
+
+# Filter rows where column 2 > 3.5
+result = filter_rows(gr(2, 3.5))
+
+# Save split across files of max 100 rows each
+save_table(result, "output.csv", max_rows=100)
+```
+
+---
+
+## Project Structure
+
+```
+tablekit/
+├── main.py          # Demo script covering all features
+├── tablekit/
+│   ├── __init__.py
+│   ├── io.py        # load_table, save_table (CSV, pickle, multi-file)
+│   ├── access.py    # get/set rows, columns, values
+│   ├── types.py     # get/set column types, auto-detection, datetime support
+│   ├── ops.py       # add, sub, mul, div, eq, gr, ls, ge, le, ne, filter_rows
+│   └── table.py     # concat, split, merge_tables, None handling
+├── test.csv         # Sample dataset
+└── test.dump        # Sample pickle file (same data as test.csv)
+```
+
+---
+
+## Author
+
+**Manaeva Daria** 
+
+
